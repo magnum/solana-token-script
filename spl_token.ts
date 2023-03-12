@@ -18,7 +18,7 @@ const run = async () => {
 
   const mintAccount = await createMint(
     connection,
-    recipient,
+    wallet,
     wallet.publicKey,
     wallet.publicKey,
     9
@@ -41,10 +41,31 @@ const run = async () => {
     mintAccount,
     tokenAccount.address,
     wallet,
-    1000000000
+    10000000000
   )
   console.log("mint transaction hash", signature);
   
+
+  const recipient = await web3.Keypair.generate();
+  // need to created a reciptient token account too
+  const tokenAccountRecipient = await getOrCreateAssociatedTokenAccount(
+    connection,
+    wallet, // payer is the previous wallet, otherwise recipient needs sol to pay for the aridrop
+    mintAccount,
+    recipient.publicKey
+  );
+  console.log("recipient token account", tokenAccountRecipient.address);
+
+  // transfering tokens from creator to recipient
+  const transfer_signature = await transfer(
+    connection,
+    wallet,
+    tokenAccount.address,
+    tokenAccountRecipient.address,
+    wallet,
+    1000000000
+  );
+  console.log("transfer transaction hash", transfer_signature);
 
 }
 
